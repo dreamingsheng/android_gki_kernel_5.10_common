@@ -61,7 +61,7 @@ jobs:
     - name: Build Kernel Package
 
       run: |
-        VERSION="GKI-5.10-$(date '+%Y-%m%d-%H%M')"
+        VERSION="GKI-5.10-$(date '+%Y-%m%d-%H%M ')"
         cd $GITHUB_WORKSPACE
         git clone https://github.com/zzh-zzh-zzh/AnyKernel3.git -b GKI
         cp android-kernel/out/android12-5.10/dist/Image AnyKernel3
