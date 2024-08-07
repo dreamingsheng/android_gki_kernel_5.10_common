@@ -1,20 +1,15 @@
-name: Build android common kernel
+name: Build android common kernel spidev module
 
 on:
-
   push:
-
     branches: [ "android12-5.10-2022-04" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - name: Remove Useless Package
-
       run: |
         docker rmi `docker images -q`
         sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
@@ -22,26 +17,20 @@ jobs:
         sudo apt -y autoremove --purge
         sudo apt -y autoclean
         sudo apt clean
-    - name: Install Package For Build
 
+    - name: Install Package For Build
       run: |
         sudo apt update && sudo apt install -y curl liblz4-1 libyaml-0-2 p7zip-full gcc g++ bison bc make git zip flex zipalign libssl-dev python3 gcc-aarch64-linux-gnu cpio
+
     - name: Maximize Build Space
-
       uses: easimon/maximize-build-space@master
-
       with:
-
         swap-size-mb: 20480
-
         remove-dotnet: 'true'
-
         remove-android: 'true'
-
         remove-haskell: 'true'
 
     - name: Download Build Tools
-
       run: |
         cd $GITHUB_WORKSPACE
         git clone https://gerrit.googlesource.com/git-repo
@@ -52,27 +41,17 @@ jobs:
         git checkout --orphan android12-5.10-2022-04
         git rm -rf .
         git pull https://github.com/zzh-zzh-zzh/android_gki_kernel_5.10_common.git android12-5.10-2022-04
-    - name: Build Kernel
 
+    - name: Build spidev.ko Module
       run: |
         cd $GITHUB_WORKSPACE/android-kernel
-        export BUILD_CONFIG=common/build.config.gki.aarch64 
+        export BUILD_CONFIG=common/build.config.gki.aarch64
         bash build/build.sh
-    - name: Build Kernel Package
+        # Build spidev.ko
+        make -C common O=../out/android12-5.10 M=drivers/spi modules
 
-      run: |
-        VERSION="GKI-5.10-$(date '+%Y-%m%d-%H%M ')"
-        cd $GITHUB_WORKSPACE
-        git clone https://github.com/zzh-zzh-zzh/AnyKernel3.git -b GKI
-        cp android-kernel/out/android12-5.10/dist/Image AnyKernel3
-        cd AnyKernel3
-        7z a -mx9 tmp.zip *
-        zipalign -v 4 tmp.zip ../$VERSION.zip
-        rm tmp.zip
-    - name: Upload Image
-
+    - name: Upload spidev.ko Module
       uses: actions/upload-artifact@v3
-
       with:
-
-        path: GKI-5.10-*.zip
+        name: spidev.ko
+        path: android-kernel/out/android12-5.10/drivers/spi/spidev.ko
