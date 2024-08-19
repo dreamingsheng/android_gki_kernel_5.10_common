@@ -1,10 +1,7 @@
 name: Build android common kernel
 
 on:
-
   push:
-
-    branches: [ "android12-5.10-2022-04" ]
 
 jobs:
 
